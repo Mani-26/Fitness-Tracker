@@ -1,0 +1,53 @@
+├── client
+│   └── src
+│       ├── api
+│       │   └── index.js
+│       ├── App.js
+│       ├── components
+│       │   ├── AddWorkout.jsx
+│       │   ├── Button.jsx
+│       │   ├── cards
+│       │   │   ├── CategoryChart.jsx
+│       │   │   ├── CountsCard.jsx
+│       │   │   ├── WeeklyStatCard.jsx
+│       │   │   └── WorkoutCard.jsx
+│       │   ├── Footer.jsx
+│       │   ├── Navbar.jsx
+│       │   ├── SignIn.jsx
+│       │   ├── SignUp.jsx
+│       │   └── TextInput.jsx
+│       ├── index.css
+│       ├── index.js
+│       ├── pages
+│       │   ├── Authentication.jsx
+│       │   ├── Contact copy.jsx
+│       │   ├── Contact.jsx
+│       │   ├── Dashboard.jsx
+│       │   ├── Home.jsx
+│       │   └── Workouts.jsx
+│       ├── redux
+│       │   ├── reducers
+│       │   │   └── userSlice.js
+│       │   └── store.js
+│       ├── styles.css
+│       └── utils
+│           ├── data.js
+│           ├── Images
+│           │   ├── AuthImage.jpg
+│           │   ├── gymImage.avif
+│           │   └── img2.jpg
+│           └── Themes.js
+└── server
+    ├── controllers
+    │   └── User.js
+    ├── error.js
+    ├── index.js
+    ├── middleware
+    │   └── verifyToken.js
+    ├── models
+    │   ├── User.js
+    │   └── Workout.js
+    ├── package-lock.json
+    ├── package.json
+    └── routes
+        └── User.js
