@@ -11,7 +11,7 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import userReducer from "./reducers/userSlice";
-
+import { fetchGoals } from "./reducers/userSlice";
 const persistConfig = {
   key: "root",
   version: 1,
@@ -20,6 +20,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   user: userReducer,
+  goals: fetchGoals,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

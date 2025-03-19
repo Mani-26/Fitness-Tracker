@@ -143,14 +143,14 @@ const Navbar = ({ currentUser }) => {
           <Navlink to="/">Home</Navlink>
           <Navlink to="/dashboard">Dashboard</Navlink>
           <Navlink to="/workouts">Workouts</Navlink>
-          <Navlink to="/contact">Contact</Navlink>
+          <Navlink to="/goals">Goals</Navlink>
         </MobileMenu>
 
         <NavItems>
           <Navlink to="/">Home</Navlink>
           <Navlink to="/dashboard">Dashboard</Navlink>
           <Navlink to="/workouts">Workouts</Navlink>
-          <Navlink to="/contact">Contact</Navlink>
+          <Navlink to="/goals">Goals</Navlink>
         </NavItems>
 
         <UserContainer>

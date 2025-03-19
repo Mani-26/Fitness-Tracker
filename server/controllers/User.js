@@ -3,8 +3,10 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { createError } from "../error.js";
 import User from "../models/User.js";
+import Goal from "../models/Goal.js";
 import Workout from "../models/Workout.js";
 import nodemailer from 'nodemailer';
+import mongoose from 'mongoose';
 
 
 dotenv.config();
@@ -339,5 +341,76 @@ export const getContact= async (req, res) => {
   } catch (error) {
     console.error('Error sending email:', error);
     res.status(500).json({ error: 'Failed to send the message' });
+  }
+};
+
+
+// Create a new goal
+export const createGoal = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const { name, targetCalories, startDate, endDate } = req.body;
+
+    if (!name || !targetCalories || !startDate || !endDate) {
+      return next(createError(400, "All fields are required"));
+    }
+
+    const goal = new Goal({
+      user: userId,
+      name,
+      targetCalories,
+      startDate,
+      endDate,
+    });
+
+    const savedGoal = await goal.save();
+    return res.status(201).json({ message: "Goal created successfully", goal: savedGoal });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get all goals for a user with progress
+export const getUserGoals = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    console.log("User ID:", userId);
+
+    const goals = await Goal.find({ user: userId });
+    console.log("Goals found:", goals);
+
+    const goalsWithProgress = await Promise.all(
+      goals.map(async (goal) => {
+        const totalCaloriesBurned = await Workout.aggregate([
+          {
+            $match: {
+              user: new mongoose.Types.ObjectId(userId),
+              date: { $gte: new Date(goal.startDate), $lte: new Date(goal.endDate) },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalCaloriesBurned: { $sum: "$caloriesBurned" },
+            },
+          },
+        ]);
+
+        const caloriesBurned = totalCaloriesBurned.length > 0 ? totalCaloriesBurned[0].totalCaloriesBurned : 0;
+        console.log(`Goal: ${goal.name}, Calories Burned: ${caloriesBurned}`);
+        const progress = (caloriesBurned / goal.targetCalories) * 100;
+
+        return {
+          ...goal._doc,
+          totalCaloriesBurned: caloriesBurned,
+          progress: progress > 100 ? 100 : progress,
+        };
+      })
+    );
+
+    return res.status(200).json({ goals: goalsWithProgress });
+  } catch (err) {
+    console.error("Error in getUserGoals:", err);
+    next(err);
   }
 };

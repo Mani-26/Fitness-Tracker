@@ -28,3 +28,13 @@ export const contact = async (token, data) =>
   await API.post(`/user/contct`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+  export const createGoal = async (token, data) =>
+    await API.post("/user/goals", data, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  
+  export const getGoals = async (token) =>
+    await API.get("/user/goals", {
+      headers: { Authorization: `Bearer ${token}` },
+    });

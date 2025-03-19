@@ -1,4 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";  // <-- Import axios
 
 const initialState = {
   currentUser: null,
@@ -20,5 +21,14 @@ export const userSlice = createSlice({
 });
 
 export const { loginSuccess, logout } = userSlice.actions;
+
+
+export const fetchGoals = createAsyncThunk("user/fetchGoals", async (_, { getState }) => {
+  const token = localStorage.getItem("fittrack-app-token");
+  const response = await axios.get("http://localhost:8080/api/goal", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+});
 
 export default userSlice.reducer;
