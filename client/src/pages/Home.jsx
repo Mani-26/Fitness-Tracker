@@ -1,16 +1,11 @@
 import React from 'react';
-// import Navbar from './components/Navbar';
-// import Footer from './components/Footer';
 import '../styles.css';
-// import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-
 
 const HomePage = () => {
-  const isLoggedIn = Boolean(localStorage.getItem("fittrack-app-token")); // Example: Replace with context or Redux if needed
+  const isLoggedIn = Boolean(localStorage.getItem("fittrack-app-token"));
 
   return (
-    <>
-      {/* <Navbar /> */}
+    <div className="page-wrapper">
       <div className="hero-section">
         <div className="hero-text">
           <h2>Welcome to Your Fitness Journey</h2>
@@ -40,8 +35,7 @@ const HomePage = () => {
           <p>Track your calories burned, steps taken, and other important metrics in real-time.</p>
         </div>
       </section>
-      {/* <Footer /> */}
-    </>
+    </div>
   );
 };
 

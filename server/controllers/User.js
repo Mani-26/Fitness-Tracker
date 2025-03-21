@@ -610,3 +610,82 @@ export const getUserGoals = async (req, res, next) => {
     next(err);
   }
 };
+
+
+export const getMonthlyWorkouts = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return next(createError(401, "User not authenticated"));
+
+    const { year, month } = req.query.params;
+    
+    console.log("User ID:", userId);
+    console.log("Query Params:", { year, month });
+
+    let matchStage = { user: userId };
+    if (year && month) {
+      const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
+      matchStage.date = { $gte: startDate, $lte: endDate };
+      console.log("Date Range for Detailed View:", { startDate, endDate });
+
+      const workouts = await Workout.find(matchStage).sort({ date: -1 });
+      console.log("Found Workouts:", workouts);
+
+      const totalCaloriesBurned = workouts.reduce((sum, w) => sum + (w.caloriesBurned || 0), 0);
+      const categoryBreakdown = workouts.reduce((acc, w) => {
+        acc[w.category] = (acc[w.category] || 0) + 1;
+        return acc;
+      }, {});
+
+      const response = {
+        year: parseInt(year),
+        month: parseInt(month),
+        totalWorkouts: workouts.length,
+        totalCaloriesBurned,
+        categoryBreakdown,
+        workouts,
+      };
+      console.log("Detailed Response:", response);
+      return res.status(200).json(response);
+    } else {
+      const monthlyData = await Workout.aggregate([
+        { $match: { user: userId } },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$date" },
+              month: { $month: "$date" },
+            },
+            totalWorkouts: { $sum: 1 },
+            totalCaloriesBurned: { $sum: "$caloriesBurned" },
+            categories: { $push: "$category" },
+          },
+        },
+        {
+          $project: {
+            year: "$_id.year",
+            month: "$_id.month",
+            totalWorkouts: 1,
+            totalCaloriesBurned: 1,
+            categoryBreakdown: {
+              $arrayToObject: {
+                $map: {
+                  input: { $setUnion: "$categories" },
+                  as: "cat",
+                  in: ["$$cat", { $size: { $filter: { input: "$categories", cond: { $eq: ["$$this", "$$cat"] } } } }],
+                },
+              },
+            },
+          },
+        },
+        { $sort: { year: -1, month: -1 } },
+      ]);
+      console.log("Aggregated Monthly Data:", monthlyData);
+      return res.status(200).json({ monthlyWorkouts: monthlyData });
+    }
+  } catch (err) {
+    console.error("Error in getMonthlyWorkouts:", err);
+    next(err);
+  }
+};

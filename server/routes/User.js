@@ -14,6 +14,7 @@ import {
   addMeal,
   getMealsByDate,
   getGoalRecommendations,
+  getMonthlyWorkouts,
 } from "../controllers/User.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -25,6 +26,7 @@ router.post("/contact", getContact);
 
 router.get("/dashboard", verifyToken, getUserDashboard);
 router.get("/workout", verifyToken, getWorkoutsByDate);
+router.get("/monthly-workouts", verifyToken, getMonthlyWorkouts);
 router.post("/workout", verifyToken, addWorkout);
 
 router.post("/goals", verifyToken, createGoal); 

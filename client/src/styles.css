@@ -1,4 +1,4 @@
-/* General Styles
+/* General Styles (remove if duplicated in index.css) */
 body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
@@ -6,70 +6,77 @@ body {
     color: #fff;
     background: linear-gradient(90deg, hsla(225, 40%, 54%, 1) 0%, hsla(284, 75%, 54%, 1) 100%);
     background-attachment: fixed;
-    
-} */
-
-/* Hero Section */
-.hero-section {
-    height: 100vh;
+  }
+  
+  /* Page Wrapper */
+  .page-wrapper {
+    min-height: 100vh; /* Takes at least full viewport */
+    overflow-y: auto; /* Enables scrolling */
+    display: flex;
+    flex-direction: column; /* Stacks children vertically */
+  }
+  
+  /* Hero Section */
+  .hero-section {
+    min-height: 100vh; /* Changed from height: 100vh */
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8)),
                 url('https://source.unsplash.com/1600x900/?fitness') center/cover no-repeat;
-}
-
-.hero-section .hero-text h2 {
+  }
+  
+  /* Rest of your styles.css remains unchanged */
+  .hero-section .hero-text h2 {
     font-size: 3rem;
     font-weight: 700;
     margin-bottom: 15px;
     text-transform: uppercase;
     color: #ffeb3b;
     letter-spacing: 2px;
-}
-
-.hero-section .hero-text p {
+  }
+  
+  .hero-section .hero-text p {
     font-size: 1.2rem;
     margin-bottom: 20px;
     color: #e0e0e0;
     max-width: 600px;
     margin: 0 auto;
-}
-
-.hero-section .cta-btn {
+  }
+  
+  .hero-section .cta-btn {
     display: inline-block;
     padding: 12px 30px;
     margin-top: 2%;
     font-size: 1.1rem;
     font-weight: 600;
     color: #fff;
-    background: linear-gradient(to right, #ff5722, #e91e63); /* Red to pink gradient */
+    background: linear-gradient(to right, #ff5722, #e91e63);
     border: none;
     border-radius: 25px;
     text-transform: uppercase;
     text-decoration: none;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease-in-out;
-}
-
-.hero-section .cta-btn:hover {
-    background: linear-gradient(to right, #e91e63, #ff5722); /* Reverse gradient */
+  }
+  
+  .hero-section .cta-btn:hover {
+    background: linear-gradient(to right, #e91e63, #ff5722);
     transform: translateY(-5px);
     box-shadow: 0 15px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* Features Section */
-.features {
+  }
+  
+  .features {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     padding: 50px 20px;
     background: #fff;
     color: #333;
-}
-
-.feature-card {
+  }
+  
+  .feature-card {
     width: 300px;
     margin: 20px;
     padding: 20px;
@@ -78,31 +85,31 @@ body {
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease-in-out;
-}
-
-.feature-card:hover {
+  }
+  
+  .feature-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
     background: linear-gradient(90deg, hsla(225, 40%, 54%, 1) 0%, hsla(284, 75%, 54%, 1) 100%);
     color: #fff;
-}
-
-.feature-icon {
+  }
+  
+  .feature-icon {
     font-size: 3rem;
     color: hsla(284, 75%, 54%, 1);
     margin-bottom: 15px;
     transition: color 0.3s ease;
-}
-
-.feature-card:hover .feature-icon {
+  }
+  
+  .feature-card:hover .feature-icon {
     color: #fff;
-}
-
-.feature-card h3 {
+  }
+  
+  .feature-card h3 {
     font-size: 1.5rem;
     margin-bottom: 10px;
-}
-
-.feature-card p {
+  }
+  
+  .feature-card p {
     font-size: 1rem;
-}
+  }

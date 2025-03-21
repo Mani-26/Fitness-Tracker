@@ -67,3 +67,9 @@ export const getRecommendations = async (token) =>
   await API.get("/user/recommendations", {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+  export const getMonthlyWorkouts = async (token, params = {}) =>
+    await API.get("/user/monthly-workouts", {
+      headers: { Authorization: `Bearer ${token}` },
+      params, // Pass year and month if provided
+    });

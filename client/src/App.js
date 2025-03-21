@@ -13,6 +13,7 @@ import Workouts from "./pages/Workouts";
 import Goals from "./pages/Goals";
 import WorkoutPlans from "./pages/WorkoutPlans";
 import Nutrition from "./pages/Nutrition";
+import MonthlyWorkouts from "./pages/MonthlyWorkouts";
 
 const Container = styled.div`
   width: 100%;
@@ -42,6 +43,7 @@ function App() {
               <Route path="/goals" exact element={<Goals />} />
               <Route path="/workout-plans" exact element={<WorkoutPlans />} />
               <Route path="/nutrition" exact element={<Nutrition />} />
+              <Route path="/monthly-workouts" exact element={<MonthlyWorkouts />} />
             </Routes>
             {/* <Footer/> */}
 

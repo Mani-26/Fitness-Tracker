@@ -30,11 +30,11 @@ const NavContainer = styled.div`
   font-size: 1rem;
 `;
 const NavLogo = styled(LinkR)`
-  width: 100%;
+  width: 80%;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 6px;
+  gap: 12px;
+  padding: 0 4px;
   font-weight: 600;
   font-size: 18px;
   text-decoration: none;
@@ -83,13 +83,13 @@ const Navlink = styled(NavLink)`
 `;
 
 const UserContainer = styled.div`
-  width: 100%;
+  width: 60%;
   height: 100%;
   display: flex;
   justify-content: flex-end;
   gap: 16px;
   align-items: center;
-  padding: 0 6px;
+  padding: 0 2px;
   color: ${({ theme }) => theme.primary};
 `;
 const TextButton = styled.div`
@@ -144,7 +144,8 @@ const Navbar = ({ currentUser }) => {
           <Navlink to="/dashboard">Dashboard</Navlink>
           <Navlink to="/workouts">Workouts</Navlink>
           <Navlink to="/goals">Goals</Navlink>
-          <Navlink to="/workout-plans">Workout Plans</Navlink>
+          {/* <Navlink to="/workout-plans">Workout Plans</Navlink> */}
+          <Navlink to="/monthly-workouts">Monthly Report</Navlink>
           <Navlink to="/nutrition">Nutrition</Navlink>
         </MobileMenu>
 
@@ -153,7 +154,8 @@ const Navbar = ({ currentUser }) => {
           <Navlink to="/dashboard">Dashboard</Navlink>
           <Navlink to="/workouts">Workouts</Navlink>
           <Navlink to="/goals">Goals</Navlink>
-          <Navlink to="/workout-plans">Workout Plans</Navlink>
+          {/* <Navlink to="/workout-plans">Workout Plans</Navlink> */}
+          <Navlink to="/monthly-workouts">Monthly Report</Navlink>
           <Navlink to="/nutrition">Nutrition</Navlink>
         </NavItems>
 
