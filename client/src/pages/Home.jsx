@@ -16,7 +16,7 @@ const HomePage = () => {
           <h2>Welcome to Your Fitness Journey</h2>
           <p>Your personal assistant for achieving your fitness goals, tracking workouts, and living a healthy life!</p>
           {isLoggedIn ? (
-            <a href="/profile" className="cta-btn">Get Started</a>
+            <a href="/dashboard" className="cta-btn">Get Started</a>
           ) : (
             <a href="/login" className="cta-btn">Get Started</a>
           )}

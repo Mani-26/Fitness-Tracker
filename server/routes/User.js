@@ -8,6 +8,12 @@ import {
   getContact,
   createGoal,
   getUserGoals,
+  createWorkoutPlan,
+  getWorkoutPlans,
+  applyWorkoutPlan,
+  addMeal,
+  getMealsByDate,
+  getGoalRecommendations,
 } from "../controllers/User.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -23,5 +29,16 @@ router.post("/workout", verifyToken, addWorkout);
 
 router.post("/goals", verifyToken, createGoal); 
 router.get("/goals", verifyToken, getUserGoals);
+
+// server/routes/User.js
+router.post("/workout-plan", verifyToken, createWorkoutPlan);
+router.get("/workout-plan", verifyToken, getWorkoutPlans);
+router.post("/workout-plan/apply", verifyToken, applyWorkoutPlan);
+
+router.post("/meal", verifyToken, addMeal);
+router.get("/meal", verifyToken, getMealsByDate);
+
+// server/routes/User.js
+router.get("/recommendations", verifyToken, getGoalRecommendations);
 
 export default router;

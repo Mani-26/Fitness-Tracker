@@ -5,6 +5,17 @@ import {
 } from "@mui/icons-material";
 
 export const counts = [
+  // {
+  //   name: "Calories Consumed",
+  //   icon: (
+  //     <LocalFireDepartmentRounded sx={{ color: "inherit", fontSize: "26px" }} />
+  //   ),
+  //   desc: "Total calories consumed today",
+  //   key: "totalCaloriesConsumed",
+  //   unit: "kcal",
+  //   color: "#eb9e34",
+  //   lightColor: "#FDF4EA",
+  // },
   {
     name: "Calories Burned",
     icon: (

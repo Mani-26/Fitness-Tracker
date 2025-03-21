@@ -1,15 +1,211 @@
+// server/controllers/User.js
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { createError } from "../error.js";
 import User from "../models/User.js";
 import Goal from "../models/Goal.js";
+import Meal from "../models/Meal.js";
 import Workout from "../models/Workout.js";
 import nodemailer from 'nodemailer';
 import mongoose from 'mongoose';
+import WorkoutPlan from "../models/WorkoutPlan.js";
 
 
 dotenv.config();
+
+export const getGoalRecommendations = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return next(createError(401, "User not authenticated"));
+
+    const goals = await Goal.find({ user: userId });
+    if (!goals.length) return res.status(200).json({ recommendations: [] });
+
+    // Fetch user data for analysis
+    const workouts = await Workout.find({ user: userId }).sort({ date: -1 }).limit(50); // Last 50 workouts
+    const meals = await Meal.find({ user: userId }).sort({ date: -1 }).limit(50); // Last 50 meals
+
+    // Analyze workout patterns
+    const categoryCounts = workouts.reduce((acc, w) => {
+      acc[w.category] = (acc[w.category] || 0) + 1;
+      return acc;
+    }, {});
+    const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "Cardio";
+    const avgCaloriesPerWorkout = workouts.length
+      ? workouts.reduce((sum, w) => sum + (w.caloriesBurned || 0), 0) / workouts.length
+      : 200; // Default assumption
+
+    // Analyze nutrition trends
+    const avgDailyCaloriesConsumed = meals.length
+      ? meals.reduce((sum, m) => sum + m.calories, 0) / (meals.length / 7) // Rough weekly avg
+      : 2000; // Default assumption
+
+    const recommendations = await Promise.all(
+      goals.map(async (goal) => {
+        const now = new Date();
+        if (new Date(goal.endDate) < now) return null; // Skip expired goals
+
+        // Progress calculation
+        const goalWorkouts = await Workout.find({
+          user: userId,
+          date: { $gte: new Date(goal.startDate), $lte: new Date(goal.endDate) },
+        });
+        const caloriesBurned = goalWorkouts.reduce((sum, w) => sum + (w.caloriesBurned || 0), 0);
+
+        const goalMeals = await Meal.find({
+          user: userId,
+          date: { $gte: new Date(goal.startDate), $lte: new Date(goal.endDate) },
+        });
+        const caloriesConsumed = goalMeals.reduce((sum, m) => sum + m.calories, 0);
+
+        const remainingCalories = goal.targetCalories - caloriesBurned;
+        const daysLeft = Math.max(1, Math.ceil((new Date(goal.endDate) - now) / (1000 * 60 * 60 * 24)));
+        const dailyBurnNeeded = remainingCalories / daysLeft;
+
+        // Personalized recommendations
+        const recs = [];
+        if (remainingCalories > 0) {
+          // Workout suggestion based on top category
+          const workoutsNeeded = Math.ceil(remainingCalories / avgCaloriesPerWorkout);
+          recs.push(
+            `Based on your ${topCategory} preference, add ${workoutsNeeded} ${Math.round(
+              remainingCalories / workoutsNeeded / 10
+            )}-min ${topCategory.toLowerCase()} sessions this week (~${Math.round(
+              avgCaloriesPerWorkout
+            )} kcal each).`
+          );
+
+          // Nutrition adjustment
+          if (caloriesConsumed > caloriesBurned) {
+            const excessCalories = caloriesConsumed - caloriesBurned;
+            const dailyReduction = Math.min(500, Math.round(excessCalories / daysLeft));
+            recs.push(
+              `You’re averaging ${Math.round(
+                avgDailyCaloriesConsumed
+              )} kcal daily; reduce intake by ${dailyReduction} kcal/day (e.g., fewer carbs or snacks).`
+            );
+          }
+
+          // Pace suggestion
+          recs.push(
+            `To hit your goal by ${new Date(goal.endDate).toLocaleDateString()}, burn ${Math.round(
+              dailyBurnNeeded
+            )} kcal daily—try splitting it across ${topCategory} and another activity.`
+          );
+        } else {
+          recs.push(
+            `Amazing! You’ve exceeded your ${goal.name} goal—consider setting a new challenge!`
+          );
+        }
+
+        return {
+          goalName: goal.name,
+          progress: caloriesBurned,
+          target: goal.targetCalories,
+          recommendations: recs,
+        };
+      })
+    );
+
+    return res.status(200).json({ recommendations: recommendations.filter((r) => r !== null) });
+  } catch (err) {
+    console.error("Error in getGoalRecommendations:", err);
+    next(err);
+  }
+};
+
+// Add a meal
+export const addMeal = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const { name, calories } = req.body;
+
+    if (!name || !calories) {
+      return next(createError(400, "Name and calories are required"));
+    }
+
+    const meal = new Meal({ user: userId, name, calories });
+    const savedMeal = await meal.save();
+    return res.status(201).json({ message: "Meal added", meal: savedMeal });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get meals for a specific date
+export const getMealsByDate = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    let date = req.query.date ? new Date(req.query.date) : new Date();
+    
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+
+    const meals = await Meal.find({
+      user: userId,
+      date: { $gte: startOfDay, $lte: endOfDay },
+    });
+    const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
+    return res.status(200).json({ meals, totalCalories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Create a new workout plan
+export const createWorkoutPlan = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const { name, workouts } = req.body;
+
+    if (!name || !workouts || !Array.isArray(workouts)) {
+      return next(createError(400, "Name and workouts array are required"));
+    }
+
+    const plan = new WorkoutPlan({ user: userId, name, workouts });
+    const savedPlan = await plan.save();
+    return res.status(201).json({ message: "Workout plan created", plan: savedPlan });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get all workout plans for a user
+export const getWorkoutPlans = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const plans = await WorkoutPlan.find({ user: userId });
+    return res.status(200).json({ plans });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Apply a workout plan to a specific date
+export const applyWorkoutPlan = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const { planId, date } = req.body;
+    const plan = await WorkoutPlan.findById(planId);
+
+    if (!plan || plan.user.toString() !== userId) {
+      return next(createError(404, "Workout plan not found"));
+    }
+
+    const workouts = plan.workouts.map((w) => ({
+      ...w,
+      user: userId,
+      date: new Date(date || Date.now()),
+      caloriesBurned: calculateCaloriesBurnt(w), // Reuse existing function
+    }));
+
+    await Workout.insertMany(workouts);
+    return res.status(201).json({ message: "Workout plan applied", workouts });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const UserRegister = async (req, res, next) => {
   try {
@@ -32,7 +228,7 @@ export const UserRegister = async (req, res, next) => {
     });
     const createdUser = await user.save();
     const token = jwt.sign({ id: createdUser._id }, process.env.JWT, {
-      expiresIn: "9999 years",
+      expiresIn: "1d",
     });
     return res.status(200).json({ token, user });
   } catch (error) {

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { counts } from "../utils/data";
 import CountsCard from "../components/cards/CountsCard";
+import CountsCard1 from "../components/cards/CountsCard1";
 import WeeklyStatCard from "../components/cards/WeeklyStatCard";
 import CategoryChart from "../components/cards/CategoryChart";
 import AddWorkout from "../components/AddWorkout";
 import WorkoutCard from "../components/cards/WorkoutCard";
-import { addWorkout, getDashboardDetails, getWorkouts } from "../api";
+import { addWorkout, getDashboardDetails, getWorkouts, getMeals } from "../api"; // Added getMeals
 
 const Container = styled.div`
   flex: 1;
@@ -47,7 +48,6 @@ const Section = styled.div`
   flex-direction: column;
   padding: 0px 16px;
   gap: 22px;
-  padding: 0px 16px;
   @media (max-width: 600px) {
     gap: 12px;
   }
@@ -65,7 +65,7 @@ const CardWrapper = styled.div`
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState();
+  const [data, setData] = useState(null); // Initialize as null for clarity
   const [buttonLoading, setButtonLoading] = useState(false);
   const [todaysWorkouts, setTodaysWorkouts] = useState([]);
   const [workout, setWorkout] = useState(`#Legs
@@ -73,55 +73,84 @@ const Dashboard = () => {
 -5 setsX15 reps
 -30 kg
 -10 min`);
+  const [nutritionData, setNutritionData] = useState({ totalCalories: 0 });
 
   const dashboardData = async () => {
     setLoading(true);
     const token = localStorage.getItem("fittrack-app-token");
-    await getDashboardDetails(token).then((res) => {
+    try {
+      const res = await getDashboardDetails(token);
       setData(res.data);
-      console.log(res.data);
       setLoading(false);
-    });
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err);
+      setLoading(false);
+    }
   };
+
   const getTodaysWorkout = async () => {
     setLoading(true);
     const token = localStorage.getItem("fittrack-app-token");
-    await getWorkouts(token, "").then((res) => {
-      setTodaysWorkouts(res?.data?.todaysWorkouts);
-      console.log(res.data);
+    try {
+      const res = await getWorkouts(token, "");
+      setTodaysWorkouts(res?.data?.todaysWorkouts || []);
       setLoading(false);
-    });
+    } catch (err) {
+      console.error("Error fetching workouts:", err);
+      setLoading(false);
+    }
+  };
+
+  const fetchNutrition = async () => {
+    const token = localStorage.getItem("fittrack-app-token");
+    try {
+      const res = await getMeals(token, "");
+      console.log("API Response for Meals:", res.data); // Debug log
+      setNutritionData({ totalCalories: res.data.totalCalories || 0 });
+    } catch (err) {
+      console.error("Error fetching nutrition data:", err);
+    }
   };
 
   const addNewWorkout = async () => {
     setButtonLoading(true);
     const token = localStorage.getItem("fittrack-app-token");
-    await addWorkout(token, { workoutString: workout })
-      .then((res) => {
-        dashboardData();
-        getTodaysWorkout();
-        setButtonLoading(false);
-      })
-      .catch((err) => {
-        alert(err);
-      });
+    try {
+      await addWorkout(token, { workoutString: workout });
+      await Promise.all([dashboardData(), getTodaysWorkout()]); // Refresh data
+    } catch (err) {
+      alert("Failed to add workout: " + err.message);
+    } finally {
+      setButtonLoading(false);
+    }
   };
 
   useEffect(() => {
-    dashboardData();
-    getTodaysWorkout();
+    Promise.all([dashboardData(), getTodaysWorkout(), fetchNutrition()]).catch(
+      (err) => console.error("Initial data fetch failed:", err)
+    );
   }, []);
+  
+  console.log(nutritionData.totalCalories);
+
   return (
     <Container>
       <Wrapper>
         <Title>Dashboard</Title>
-        <FlexWrap>
-          {counts.map((item) => (
-            <CountsCard item={item} data={data} />
-          ))}
-        </FlexWrap>
+        {/* <FlexWrap></FlexWrap> */}
 
         <FlexWrap>
+          <CountsCard1
+            item={{
+              // ...counts[4],
+              name: "Calories Consumed",
+              desc: "Total calories consumed today",
+            }}
+            data={nutritionData.totalCalories}
+            />
+          {counts.map((item) => (
+            <CountsCard key={item.name} item={item} data={data} />
+          ))}
           <WeeklyStatCard data={data} />
           <CategoryChart data={data} />
           <AddWorkout
@@ -136,7 +165,7 @@ const Dashboard = () => {
           <Title>Todays Workouts</Title>
           <CardWrapper>
             {todaysWorkouts.map((workout) => (
-              <WorkoutCard workout={workout} />
+              <WorkoutCard key={workout._id} workout={workout} />
             ))}
           </CardWrapper>
         </Section>

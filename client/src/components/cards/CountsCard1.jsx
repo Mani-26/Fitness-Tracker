@@ -81,13 +81,13 @@ const Desc = styled.div`
 `;
 
 const CountsCard = ({ item, data }) => {
-  
+  const value = item.name === "Calories Consumed" ? data?.totalCalories || 0 : data?.[item.key] || 0;
   return (
     <Card>
       <Left>
         <Title>{item.name}</Title>
         <Value>
-          {data && data[item.key] ? data[item.key].toFixed(2) : "0.00"}
+          {data? data.toFixed(2) : "0.00"}
           <Unit>{item.unit}</Unit>
           <Span positive>(+10%)</Span>
         </Value>
